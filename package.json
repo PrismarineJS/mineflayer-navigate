@@ -6,7 +6,7 @@
   "devDependencies": {
     "mineflayer": "0.0.9"
   },
-  "repository": "",
+  "repository": "git://github.com/superjoe30/mineflayer-navigator.git",
   "keywords": [
     "mineflayer",
     "minecraft",
