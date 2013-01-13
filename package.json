@@ -16,5 +16,8 @@
     "navigation"
   ],
   "author": "Andrew Kelley",
-  "license": "BSD"
+  "license": "BSD",
+  "dependencies": {
+    "a-star": "0.0.1"
+  }
 }

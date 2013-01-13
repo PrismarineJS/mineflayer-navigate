@@ -2,6 +2,7 @@ var mineflayer = require('mineflayer');
 var bot = mineflayer.createBot({
   username: "navigator",
 });
+require('../')(bot);
 bot.navigate.on('pathPartFound', function (path) {
   console.log(path);
   bot.chat("found partial path");
