@@ -5,21 +5,23 @@ the A* algorithm.
 
 See [https://github.com/superjoe30/mineflayer/](https://github.com/superjoe30/mineflayer/)
 
-STATUS: *NOT WORKING YET*
-
 ## Usage
 
 ```js
 var mineflayer = require('mineflayer');
-var bot = mineflayer.createBot(...);
+var navigatePlugin = require('mineflayer-navigate')(mineflayer);
+var bot = mineflayer.createBot({ username: 'Player' });
 // install the plugin
-require('mineflayer-navigator')(bot);
+navigatePlugin(bot);
 bot.on('chat', function(username, message) {
   // navigate to whoever talks
-  var destination = bot.players[username].entity.position;
-  // stop previous navigation, if any
-  bot.navigate.stop();
-  bot.navigate.to(destination);
+  if (username === bot.username) return;
+  var target = bot.players[username].entity;
+  if (message === 'come') {
+    bot.navigate.to(target.position);
+  } else if (message === 'stop') {
+    bot.navigate.stop();
+  }
 });
 ```
 

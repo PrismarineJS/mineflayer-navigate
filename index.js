@@ -1,26 +1,10 @@
 var aStar = require('a-star')
   , EventEmitter = require('events').EventEmitter
-  , mineflayer = require('mineflayer')
-  , vec3 = mineflayer.vec3
 
-module.exports = inject;
+module.exports = init;
 
-function arrayFiltered(array, predicate) {
-  var result = [];
-  for (var i = 0; i < array.length; i++) {
-    var item = array[i];
-    if (predicate(item)) result.push(item);
-  }
-  return result;
-}
-
-function arrayMapped(array, transformer) {
-  var result = [];
-  for (var i = 0; i < this.length; i++) {
-    result.push(transformer(array[i]));
-  }
-  return result;
-}
+// instantiated from init
+var vec3;
 
 var MONITOR_INTERVAL = 40;
 var WATER_THRESHOLD = 20;
@@ -31,10 +15,9 @@ var DEFAULT_END_RADIUS = 0.1;
 // head in the correct direction and recalculate upon getting closer
 var TOO_FAR_THRESHOLD = 150;
 
-function createHeuristicFn(end) {
-  return function(node) {
-    return node.point.distanceTo(end) + 5 * node.water;
-  };
+function init(mineflayer) {
+  vec3 = mineflayer.vec3;
+  return inject;
 }
 
 function inject(bot) {
@@ -95,7 +78,7 @@ function inject(bot) {
 
     // start
     // go to the centers of blocks
-    currentCourse = path.mapped(function(node) { return node.point.offset(0.5, 0, 0.5); });
+    currentCourse = arrayMapped(path, nodeCenterOffset);
     var lastNodeTime = new Date().getTime();
     function monitorMovement() {
       var nextPoint = currentCourse[0];
@@ -312,7 +295,7 @@ function inject(bot) {
         var block = bot.blockAt(point);
         return {
           safe: isSafe(block),
-          physical: block.boundingBox === 'solid',
+          physical: block.boundingBox === 'block',
         };
       }
     });
@@ -344,6 +327,27 @@ function isSafe(block) {
   return block.boundingBox === 'empty';
 }
 
+function nodeCenterOffset(node) {
+  return node.point.offset(0.5, 0, 0.5);
+}
+
+function arrayFiltered(array, predicate) {
+  var result = [];
+  for (var i = 0; i < array.length; i++) {
+    var item = array[i];
+    if (predicate(item)) result.push(item);
+  }
+  return result;
+}
+
+function arrayMapped(array, transformer) {
+  var result = [];
+  for (var i = 0; i < array.length; i++) {
+    result.push(transformer(array[i]));
+  }
+  return result;
+}
+
 function Node(point, water) {
   this.point = point;
   this.water = water;
@@ -352,3 +356,9 @@ Node.prototype.toString = function() {
   // must declare a toString so that A* works.
   return this.point.toString() + ":" + this.water;
 };
+
+function createHeuristicFn(end) {
+  return function(node) {
+    return node.point.distanceTo(end) + 5 * node.water;
+  };
+}

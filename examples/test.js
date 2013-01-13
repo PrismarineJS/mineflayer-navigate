@@ -1,14 +1,13 @@
 var mineflayer = require('mineflayer');
+var navigatePlugin = require('../')(mineflayer);
 var bot = mineflayer.createBot({
-  username: "navigator",
+  username: "Player",
 });
-require('../')(bot);
+navigatePlugin(bot);
 bot.navigate.on('pathPartFound', function (path) {
-  console.log(path);
   bot.chat("found partial path");
 });
 bot.navigate.on('pathFound', function (path) {
-  console.log(path);
   bot.chat("found path");
 });
 bot.navigate.on('cannotFind', function () {
