@@ -1,0 +1,20 @@
+{
+  "name": "mineflayer-navigate",
+  "version": "0.0.0",
+  "description": "mineflayer plugin which adds 3d pathfinding",
+  "main": "index.js",
+  "devDependencies": {
+    "mineflayer": "0.0.9"
+  },
+  "repository": "",
+  "keywords": [
+    "mineflayer",
+    "minecraft",
+    "bot",
+    "path",
+    "finding",
+    "navigation"
+  ],
+  "author": "Andrew Kelley",
+  "license": "BSD"
+}
