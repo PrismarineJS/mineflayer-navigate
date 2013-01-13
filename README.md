@@ -5,6 +5,8 @@ the A* algorithm.
 
 See [https://github.com/superjoe30/mineflayer/](https://github.com/superjoe30/mineflayer/)
 
+STATUS: *NOT WORKING YET*
+
 ## Usage
 
 ```js
