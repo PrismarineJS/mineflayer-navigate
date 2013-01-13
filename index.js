@@ -25,6 +25,7 @@ function arrayMapped(array, transformer) {
 var MONITOR_INTERVAL = 40;
 var WATER_THRESHOLD = 20;
 var DEFAULT_TIMEOUT = 10 * 1000; // 10 seconds
+var DEFAULT_END_RADIUS = 0.1;
 
 // if the distance is more than this number, navigator will opt to simply
 // head in the correct direction and recalculate upon getting closer
@@ -54,12 +55,14 @@ function inject(bot) {
     stop();
     var start = bot.entity.position.floored();
     end = end.floored();
-    params.timeout = params.timeout == null ? DEFAULT_TIMEOUT : params.timeout;
-    var isEnd = params.isEnd || (params.endRadius == null ?
-        preciseIsEnd : createIsEndWithRadius(end, params.endRadius));
+    params = params || {};
+    var timeout = params.timeout == null ? DEFAULT_TIMEOUT : params.timeout;
+    var endRadius = params.endRadius == null ? DEFAULT_END_RADIUS : params.endRadius;
+    var isEnd = params.isEnd || createIsEndWithRadius(end, endRadius);
 
     if (start.distanceTo(end) > TOO_FAR_THRESHOLD) {
       // Too far to calculate reliably. Go in the right general direction for now.
+                assert.ok(false, "haven't fixed this code yet");
                 var old_is_end_func = params.isEnd;
                 var old_path_found_func = params.pathFound;
                 var old_arrived_func = params.arrived;
@@ -78,11 +81,11 @@ function inject(bot) {
     }
     var path = aStar({
       start: new Node(start, 0),
-      isEnd: params.isEnd,
+      isEnd: isEnd,
       neighbor: getNeighbors,
       distance: distanceFunc,
       heuristic: createHeuristicFn(end),
-      timeout: params.timeout,
+      timeout: timeout,
     });
     if (path == null) {
       bot.navigate.emit("cannotFind");
@@ -325,10 +328,6 @@ function inject(bot) {
       return node.water <= WATER_THRESHOLD;
     });
   }
-}
-
-function preciseIsEnd(node) {
-  return node.point.equals(end);
 }
 
 function createIsEndWithRadius(end, radius) {
