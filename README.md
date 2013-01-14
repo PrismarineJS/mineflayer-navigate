@@ -5,6 +5,8 @@ the A* algorithm.
 
 See [https://github.com/superjoe30/mineflayer/](https://github.com/superjoe30/mineflayer/)
 
+[YouTube Demo](http://www.youtube.com/watch?v=O6lQdmRz8eE)
+
 ## Usage
 
 ```js
