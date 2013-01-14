@@ -4,7 +4,7 @@
   "description": "mineflayer plugin which adds 3d pathfinding",
   "main": "index.js",
   "devDependencies": {
-    "mineflayer": "0.0.9"
+    "mineflayer": "0.0.11"
   },
   "repository": "git://github.com/superjoe30/mineflayer-navigator.git",
   "keywords": [
