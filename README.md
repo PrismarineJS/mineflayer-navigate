@@ -13,6 +13,18 @@ var navigatePlugin = require('mineflayer-navigate')(mineflayer);
 var bot = mineflayer.createBot({ username: 'Player' });
 // install the plugin
 navigatePlugin(bot);
+bot.navigate.on('pathFound', function (path) {
+  bot.chat("found path. I can get there in " + path.length + " moves.");
+});
+bot.navigate.on('cannotFind', function () {
+  bot.chat("unable to find path");
+});
+bot.navigate.on('arrived', function () {
+  bot.chat("I have arrived");
+});
+bot.navigate.on('stop', function() {
+  bot.chat("stopping");
+});
 bot.on('chat', function(username, message) {
   // navigate to whoever talks
   if (username === bot.username) return;

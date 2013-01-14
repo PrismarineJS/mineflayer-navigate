@@ -34,95 +34,117 @@ function inject(bot) {
   bot.navigate.to = navigateTo;
   bot.navigate.stop = stop;
 
+  // publicly exposed
   function navigateTo(end, params) {
     stop();
-    var start = bot.entity.position.floored();
     end = end.floored();
     params = params || {};
     var timeout = params.timeout == null ? DEFAULT_TIMEOUT : params.timeout;
     var endRadius = params.endRadius == null ? DEFAULT_END_RADIUS : params.endRadius;
     var isEnd = params.isEnd || createIsEndWithRadius(end, endRadius);
+    var heuristic = createHeuristicFn(end);
 
-    if (start.distanceTo(end) > TOO_FAR_THRESHOLD) {
-      // Too far to calculate reliably. Go in the right general direction for now.
-                assert.ok(false, "haven't fixed this code yet");
-                var old_is_end_func = params.isEnd;
-                var old_path_found_func = params.pathFound;
-                var old_arrived_func = params.arrived;
-                params.isEnd = function(node) {
-                    // let's just go 100 meters (not end in water)
-                    return node.water === 0 && start.distanceTo(node.point) >= 100;
-                };
-                params.pathFound = params.pathPartFound;
-                params.arrived = function() {
-                    // try to go the next bit
-                    params.isEnd = old_is_end_func;
-                    params.pathFound = old_path_found_func;
-                    params.arrived = old_arrived_func;
-                    navigateTo(end, params);
-                };
-    }
-    var path = aStar({
-      start: new Node(start, 0),
-      isEnd: isEnd,
-      neighbor: getNeighbors,
-      distance: distanceFunc,
-      heuristic: createHeuristicFn(end),
-      timeout: timeout,
+    navigate({
+      onArrived: onArrived,
+      onPathFound: onPathFound,
+      onCannotFind: onCannotFind,
     });
-    if (path == null) {
+
+    function onArrived() {
+      bot.navigate.emit("arrived");
+    }
+
+    function onPathFound(path) {
+      bot.navigate.emit("pathFound", path);
+    }
+
+    function onCannotFind() {
       bot.navigate.emit("cannotFind");
-      return;
     }
-    bot.navigate.emit("pathFound", path);
 
-    // start
-    // go to the centers of blocks
-    currentCourse = arrayMapped(path, nodeCenterOffset);
-    var lastNodeTime = new Date().getTime();
-    function monitorMovement() {
-      var nextPoint = currentCourse[0];
-      var currentPosition = bot.entity.position;
-      if (currentPosition.distanceTo(nextPoint) <= 0.2) {
-        // arrived at next point
-        lastNodeTime = new Date().getTime();
-        currentCourse.shift();
-        if (currentCourse.length === 0) {
-          // done
-          stop();
-          bot.navigate.emit("arrived");
-          return;
+    function navigate(params) {
+      var start = bot.entity.position.floored();
+      var onPathFound = params.onPathFound;
+      var onArrived = params.onArrived;
+      var actualIsEnd = isEnd;
+      if (start.distanceTo(end) > TOO_FAR_THRESHOLD) {
+        // Too far to calculate reliably. Go in the right general direction for now.
+        actualIsEnd = justGoIsEnd;
+        onArrived = nextPartOnArrived;
+        onPathFound = onPartialPathFound;
+      }
+      var path = aStar({
+        start: new Node(start, 0),
+        isEnd: actualIsEnd,
+        neighbor: getNeighbors,
+        distance: distanceFunc,
+        heuristic: heuristic,
+        timeout: timeout,
+      });
+      if (path == null) {
+        params.onCannotFind();
+        return;
+      }
+      onPathFound(path);
+
+      // start
+      // go to the centers of blocks
+      currentCourse = arrayMapped(path, nodeCenterOffset);
+      var lastNodeTime = new Date().getTime();
+      function monitorMovement() {
+        var nextPoint = currentCourse[0];
+        var currentPosition = bot.entity.position;
+        if (currentPosition.distanceTo(nextPoint) <= 0.2) {
+          // arrived at next point
+          lastNodeTime = new Date().getTime();
+          currentCourse.shift();
+          if (currentCourse.length === 0) {
+            // done
+            stop();
+            onArrived();
+            return;
+          }
+          // not done yet
+          nextPoint = currentCourse[0];
         }
-        // not done yet
-        nextPoint = currentCourse[0];
-      }
-      var delta = nextPoint.minus(currentPosition);
-      var gottaJump;
-      var horizontalDelta = Math.abs(delta.x + delta.z);
-      if (delta.y > 0.1) {
-        // gotta jump up when we're close enough
-        gottaJump = horizontalDelta < 1.75;
-      } else if (delta.y > -0.1) {
-        // possibly jump over a hole
-        gottaJump = 1.5 < horizontalDelta && horizontalDelta < 2.5;
-      } else {
-        gottaJump = 2.4 < horizontalDelta && horizontalDelta < 2.7;
-      }
-      bot.setControlState('jump', gottaJump);
+        var delta = nextPoint.minus(currentPosition);
+        var gottaJump;
+        var horizontalDelta = Math.abs(delta.x + delta.z);
+        if (delta.y > 0.1) {
+          // gotta jump up when we're close enough
+          gottaJump = horizontalDelta < 1.75;
+        } else if (delta.y > -0.1) {
+          // possibly jump over a hole
+          gottaJump = 1.5 < horizontalDelta && horizontalDelta < 2.5;
+        } else {
+          gottaJump = 2.4 < horizontalDelta && horizontalDelta < 2.7;
+        }
+        bot.setControlState('jump', gottaJump);
 
-      // run toward next point
-      var lookAtPoint = vec3(nextPoint.x, currentPosition.y, nextPoint.z);
-      bot.lookAt(lookAtPoint);
-      bot.setControlState('forward', true);
+        // run toward next point
+        var lookAtPoint = vec3(nextPoint.x, currentPosition.y, nextPoint.z);
+        bot.lookAt(lookAtPoint);
+        bot.setControlState('forward', true);
+      }
+      currentCallbackId = setInterval(monitorMovement, MONITOR_INTERVAL);
 
-      // check for futility
-      if (new Date().getTime() - lastNodeTime > 1500) {
-        // should never take this long to go to the next node
-        // reboot the path finding algorithm.
-        navigateTo(end, params);
+      function justGoIsEnd(node) {
+        // let's just go 100 meters (and not end in water)
+        return node.water === 0 && start.distanceTo(node.point) >= 100;
+      }
+
+      function nextPartOnArrived() {
+        // try to go the next bit
+        navigate({
+          onArrived: params.onArrived,
+          onPathFound: params.onPathFound,
+        });
+      }
+
+      function onPartialPathFound(path) {
+        bot.navigate.emit("pathPartFound", path);
       }
     }
-    currentCallbackId = setInterval(monitorMovement, MONITOR_INTERVAL);
   }
 
   function stop() {
@@ -293,9 +315,12 @@ function inject(bot) {
       }
       function properties(point) {
         var block = bot.blockAt(point);
-        return {
+        return block ? {
           safe: isSafe(block),
           physical: block.boundingBox === 'block',
+        } : {
+          safe: false,
+          physical: false,
         };
       }
     });
