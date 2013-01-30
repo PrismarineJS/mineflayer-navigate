@@ -1,6 +1,6 @@
 {
   "name": "mineflayer-navigate",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "mineflayer plugin which adds 3d pathfinding",
   "main": "index.js",
   "devDependencies": {

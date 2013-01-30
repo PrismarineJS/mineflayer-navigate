@@ -81,3 +81,19 @@ Emitted when the destination is reached.
 ### event "stop"
 
 Emitted when navigation has been aborted.
+
+## History
+
+### 0.0.3
+
+ * fix bot looking at its feet while walking
+ * possible speed improvement by using native array methods
+ * `cannotFind` event now has `closestPoint` parameter, the closest point it
+   *could* get to
+ * `bot.navigate.blocksToAvoid` is a map of block id to boolean value which
+   tells whether to avoid the block. comes with sensible defaults like
+   avoiding fire and crops.
+
+### 0.0.2
+
+ * fix pathfinding very far away
