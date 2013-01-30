@@ -122,7 +122,8 @@ function inject(bot) {
         bot.setControlState('jump', gottaJump);
 
         // run toward next point
-        var lookAtPoint = vec3(nextPoint.x, currentPosition.y, nextPoint.z);
+        var lookAtY = currentPosition.y + bot.entity.height;
+        var lookAtPoint = vec3(nextPoint.x, lookAtY, nextPoint.z);
         bot.lookAt(lookAtPoint);
         bot.setControlState('forward', true);
       }
