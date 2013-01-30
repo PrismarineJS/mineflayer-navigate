@@ -34,6 +34,13 @@ function inject(bot) {
   bot.navigate.to = navigateTo;
   bot.navigate.stop = stop;
 
+  bot.navigate.blocksToAvoid = {
+    51: true, // fire
+    59: true, // crops
+    10: true, // lava
+    11: true, // lava
+  };
+
   // publicly exposed
   function navigateTo(end, params) {
     stop();
@@ -344,6 +351,11 @@ function inject(bot) {
     bot.navigate.emit("stop");
   }
 
+  function isSafe(block) {
+    return block.boundingBox === 'empty' &&
+      !bot.navigate.blocksToAvoid[block.type];
+  }
+
 }
 
 function createIsEndWithRadius(end, radius) {
@@ -354,10 +366,6 @@ function createIsEndWithRadius(end, radius) {
 
 function distanceFunc(nodeA, nodeB) {
   return nodeA.point.distanceTo(nodeB.point);
-}
-
-function isSafe(block) {
-  return block.boundingBox === 'empty';
 }
 
 function nodeCenterOffset(node) {

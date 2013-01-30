@@ -5,6 +5,8 @@ var bot = mineflayer.createBot({
   username: "Player",
 });
 navigatePlugin(bot);
+bot.navigate.blocksToAvoid[132] = true; // avoid tripwire
+bot.navigate.blocksToAvoid[59] = false; // ok to trample crops
 bot.navigate.on('pathPartFound', function (path) {
   bot.chat("Going " + path.length + " meters in the general direction for now.");
 });
