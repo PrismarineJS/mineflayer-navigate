@@ -58,8 +58,8 @@ function inject(bot) {
       bot.navigate.emit("pathFound", path);
     }
 
-    function onCannotFind() {
-      bot.navigate.emit("cannotFind");
+    function onCannotFind(closestPoint) {
+      bot.navigate.emit("cannotFind", closestPoint);
     }
 
     function navigate(params) {
@@ -73,6 +73,8 @@ function inject(bot) {
         onArrived = nextPartOnArrived;
         onPathFound = onPartialPathFound;
       }
+      var closestPoint = null;
+      var closestPointDistance = null;
       var path = aStar({
         start: new Node(start, 0),
         isEnd: actualIsEnd,
@@ -82,7 +84,7 @@ function inject(bot) {
         timeout: timeout,
       });
       if (path == null) {
-        params.onCannotFind();
+        params.onCannotFind(closestPoint);
         return;
       }
       onPathFound(path);
@@ -145,6 +147,192 @@ function inject(bot) {
       function onPartialPathFound(path) {
         bot.navigate.emit("pathPartFound", path);
       }
+
+      function getNeighbors(node) {
+        // for each cardinal direction:
+        // "." is head. "+" is feet and current location.
+        // "#" is initial floor which is always solid. "a"-"u" are blocks to check
+        //
+        //   --0123-- horizontalOffset
+        //  |
+        // +2  aho
+        // +1  .bip
+        //  0  +cjq
+        // -1  #dkr
+        // -2   els
+        // -3   fmt
+        // -4   gn
+        //  |
+        //  dz
+        //
+        var point = node.point;
+        var distance = point.distanceTo(end);
+        if (!closestPoint || distance < closestPointDistance) {
+          closestPoint = point;
+          closestPointDistance = distance;
+        }
+        var isSafeA = isSafe(bot.blockAt(point.offset(0, 2, 0)));
+        var result = [];
+        cardinalDirectionVectors.forEach(function(directionVector) {
+          var blockH, blockE;
+          var pointB = pointAt(1, 1);
+          var blockB = properties(pointB);
+          if (!blockB.safe) {
+            // we can do nothing in this direction
+            return;
+          }
+          var pointC = pointAt(1, 0);
+          var blockC = properties(pointC);
+          if (!blockC.safe) {
+            // can't walk forward
+            if (!blockC.physical) {
+              // too dangerous
+              return;
+            }
+            if (!isSafeA) {
+              // can't jump
+              return;
+            }
+            blockH = properties(pointAt(1, 2));
+            if (!blockH.safe) {
+              // no head room to stand on c
+              return;
+            }
+            // can jump up onto c
+            result.push(pointB);
+            return;
+          }
+          // c is open
+          var pointD = pointAt(1, -1);
+          var blockD = properties(pointD);
+          if (blockD.physical) {
+            // can walk onto d. this is the case of flat ground.
+            result.push(pointC);
+            return;
+          }
+          if (blockD.safe) {
+            // safe to drop through d
+            var pointE = pointAt(1, -2);
+            blockE = properties(pointE);
+            if (blockE.physical) {
+              // can drop onto e
+              result.push(pointD);
+            } else if (blockE.safe) {
+              // can drop through e
+              var pointF = pointAt(1, -3);
+              var blockF = properties(pointF);
+              if (blockF.physical) {
+                // can drop onto f
+                result.push(pointE);
+              } else if (blockF.safe) {
+                // can drop through f
+                var blockG = properties(pointAt(1, -4));
+                if (blockG.physical) {
+                  result.push(pointF);
+                }
+              }
+            }
+          }
+          // might be able to jump over the d hole.
+          blockH = properties(pointAt(1, 2));
+          var blockO = properties(pointAt(2, 2));
+          var canJumpForward = isSafeA && blockH.safe && blockO.safe;
+
+          var pointI = pointAt(2, 1);
+          var blockI = properties(pointI);
+          var pointJ = pointAt(2, 0);
+          var blockJ = properties(pointJ);
+          if (canJumpForward && blockI.safe && blockJ.physical) {
+            // can jump over and up onto j
+            result.push(pointI);
+          }
+          var pointK = pointAt(2, -1);
+          var blockK = properties(pointK);
+          var canJumpPastJ = canJumpForward && blockJ.safe && blockI.safe;
+          if (canJumpPastJ && blockK.physical) {
+            // can jump over onto k
+            result.push(pointJ);
+            canJumpPastJ = false;
+          }
+
+          // might be able to walk and drop forward
+          var pointL = pointAt(2, -2);
+          var blockL = properties(pointL);
+          var canLandOnL = false;
+          if (blockI.safe && blockJ.safe && blockK.safe && blockL.physical) {
+            // can walk and drop onto l
+            canLandOnL = true;
+            result.push(pointK);
+          }
+
+          if (blockE === undefined) blockE = properties(pointAt(1, -2));
+          var canLandOnM = false;
+          if (blockE.safe) {
+            // can drop through e
+            var pointM = pointAt(2, -3);
+            var blockM = properties(pointM);
+            if (blockJ.safe && blockK.safe && blockL.safe && blockM.physical) {
+              // can walk and drop onto m
+              canLandOnM = true;
+              result.push(pointL);
+            }
+            var blockN = properties(pointAt(2, -4));
+            if (blockK.safe && blockL.safe && blockM.safe && blockN.physical) {
+              // can walk and drop onto n
+              result.push(pointM);
+            }
+          }
+          if (!canJumpPastJ) return;
+          // 3rd column
+          var blockP = properties(pointAt(3, 1));
+          var pointQ = pointAt(3, 0);
+          var blockQ = properties(pointQ);
+          var pointR = pointAt(3, -1);
+          var blockR = properties(pointR);
+          if (blockP.safe && blockQ.safe && blockR.physical) {
+            // can jump way over onto r
+            result.push(pointQ);
+            return;
+          }
+          var pointS = pointAt(3, -2);
+          var blockS = properties(pointS);
+          if (!canLandOnL && blockQ.safe && blockR.safe && blockS.physical) {
+            // can jump way over and down onto s
+            result.push(pointR);
+            return;
+          }
+          var blockT = properties(pointAt(3, -3));
+          if (!canLandOnM && blockR.safe && blockS.safe && blockT.physical) {
+            // can jump way over and down onto t
+            result.push(pointS);
+            return;
+          }
+
+          function pointAt(horizontalOffset, dy) {
+            return point.offset(directionVector.x * horizontalOffset, dy, directionVector.z * horizontalOffset);
+          }
+          function properties(point) {
+            var block = bot.blockAt(point);
+            return block ? {
+              safe: isSafe(block),
+              physical: block.boundingBox === 'block',
+            } : {
+              safe: false,
+              physical: false,
+            };
+          }
+        });
+        return result.map(function(point) {
+          var faceBlock = bot.blockAt(point.offset(0, 1, 0));
+          var water = 0;
+          if (faceBlock.type === 0x08 || faceBlock.type === 0x09) {
+            water = node.water + 1;
+          }
+          return new Node(point, water);
+        }).filter(function(node) {
+          return node.water <= WATER_THRESHOLD;
+        });
+      }
     }
   }
 
@@ -156,186 +344,6 @@ function inject(bot) {
     bot.navigate.emit("stop");
   }
 
-  function getNeighbors(node) {
-    // for each cardinal direction:
-    // "." is head. "+" is feet and current location.
-    // "#" is initial floor which is always solid. "a"-"u" are blocks to check
-    //
-    //   --0123-- horizontalOffset
-    //  |
-    // +2  aho
-    // +1  .bip
-    //  0  +cjq
-    // -1  #dkr
-    // -2   els
-    // -3   fmt
-    // -4   gn
-    //  |
-    //  dz
-    //
-    var point = node.point;
-    var isSafeA = isSafe(bot.blockAt(point.offset(0, 2, 0)));
-    var result = [];
-    cardinalDirectionVectors.forEach(function(directionVector) {
-      var blockH, blockE;
-      var pointB = pointAt(1, 1);
-      var blockB = properties(pointB);
-      if (!blockB.safe) {
-        // we can do nothing in this direction
-        return;
-      }
-      var pointC = pointAt(1, 0);
-      var blockC = properties(pointC);
-      if (!blockC.safe) {
-        // can't walk forward
-        if (!blockC.physical) {
-          // too dangerous
-          return;
-        }
-        if (!isSafeA) {
-          // can't jump
-          return;
-        }
-        blockH = properties(pointAt(1, 2));
-        if (!blockH.safe) {
-          // no head room to stand on c
-          return;
-        }
-        // can jump up onto c
-        result.push(pointB);
-        return;
-      }
-      // c is open
-      var pointD = pointAt(1, -1);
-      var blockD = properties(pointD);
-      if (blockD.physical) {
-        // can walk onto d. this is the case of flat ground.
-        result.push(pointC);
-        return;
-      }
-      if (blockD.safe) {
-        // safe to drop through d
-        var pointE = pointAt(1, -2);
-        blockE = properties(pointE);
-        if (blockE.physical) {
-          // can drop onto e
-          result.push(pointD);
-        } else if (blockE.safe) {
-          // can drop through e
-          var pointF = pointAt(1, -3);
-          var blockF = properties(pointF);
-          if (blockF.physical) {
-            // can drop onto f
-            result.push(pointE);
-          } else if (blockF.safe) {
-            // can drop through f
-            var blockG = properties(pointAt(1, -4));
-            if (blockG.physical) {
-              result.push(pointF);
-            }
-          }
-        }
-      }
-      // might be able to jump over the d hole.
-      blockH = properties(pointAt(1, 2));
-      var blockO = properties(pointAt(2, 2));
-      var canJumpForward = isSafeA && blockH.safe && blockO.safe;
-
-      var pointI = pointAt(2, 1);
-      var blockI = properties(pointI);
-      var pointJ = pointAt(2, 0);
-      var blockJ = properties(pointJ);
-      if (canJumpForward && blockI.safe && blockJ.physical) {
-        // can jump over and up onto j
-        result.push(pointI);
-      }
-      var pointK = pointAt(2, -1);
-      var blockK = properties(pointK);
-      var canJumpPastJ = canJumpForward && blockJ.safe && blockI.safe;
-      if (canJumpPastJ && blockK.physical) {
-        // can jump over onto k
-        result.push(pointJ);
-        canJumpPastJ = false;
-      }
-
-      // might be able to walk and drop forward
-      var pointL = pointAt(2, -2);
-      var blockL = properties(pointL);
-      var canLandOnL = false;
-      if (blockI.safe && blockJ.safe && blockK.safe && blockL.physical) {
-        // can walk and drop onto l
-        canLandOnL = true;
-        result.push(pointK);
-      }
-
-      if (blockE === undefined) blockE = properties(pointAt(1, -2));
-      var canLandOnM = false;
-      if (blockE.safe) {
-        // can drop through e
-        var pointM = pointAt(2, -3);
-        var blockM = properties(pointM);
-        if (blockJ.safe && blockK.safe && blockL.safe && blockM.physical) {
-          // can walk and drop onto m
-          canLandOnM = true;
-          result.push(pointL);
-        }
-        var blockN = properties(pointAt(2, -4));
-        if (blockK.safe && blockL.safe && blockM.safe && blockN.physical) {
-          // can walk and drop onto n
-          result.push(pointM);
-        }
-      }
-      if (!canJumpPastJ) return;
-      // 3rd column
-      var blockP = properties(pointAt(3, 1));
-      var pointQ = pointAt(3, 0);
-      var blockQ = properties(pointQ);
-      var pointR = pointAt(3, -1);
-      var blockR = properties(pointR);
-      if (blockP.safe && blockQ.safe && blockR.physical) {
-        // can jump way over onto r
-        result.push(pointQ);
-        return;
-      }
-      var pointS = pointAt(3, -2);
-      var blockS = properties(pointS);
-      if (!canLandOnL && blockQ.safe && blockR.safe && blockS.physical) {
-        // can jump way over and down onto s
-        result.push(pointR);
-        return;
-      }
-      var blockT = properties(pointAt(3, -3));
-      if (!canLandOnM && blockR.safe && blockS.safe && blockT.physical) {
-        // can jump way over and down onto t
-        result.push(pointS);
-        return;
-      }
-
-      function pointAt(horizontalOffset, dy) {
-        return point.offset(directionVector.x * horizontalOffset, dy, directionVector.z * horizontalOffset);
-      }
-      function properties(point) {
-        var block = bot.blockAt(point);
-        return block ? {
-          safe: isSafe(block),
-          physical: block.boundingBox === 'block',
-        } : {
-          safe: false,
-          physical: false,
-        };
-      }
-    });
-    return result.map(function(point) {
-      var faceBlock = bot.blockAt(point.offset(0, 1, 0));
-      var water = 0;
-      if (faceBlock.type === 0x08 || faceBlock.type === 0x09) {
-        water = node.water + 1;
-      }
-      return new Node(point, water);
-    }).filter(function(node) {
-      return node.water <= WATER_THRESHOLD;
-    });
-  }
 }
 
 function createIsEndWithRadius(end, radius) {

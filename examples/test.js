@@ -11,8 +11,9 @@ bot.navigate.on('pathPartFound', function (path) {
 bot.navigate.on('pathFound', function (path) {
   bot.chat("I can get there in " + path.length + " moves.");
 });
-bot.navigate.on('cannotFind', function () {
-  bot.chat("unable to find path");
+bot.navigate.on('cannotFind', function (closestPoint) {
+  bot.chat("unable to find path. getting as close as possible");
+  bot.navigate.to(closestPoint);
 });
 bot.navigate.on('arrived', function () {
   bot.chat("I have arrived");
