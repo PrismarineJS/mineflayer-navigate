@@ -84,6 +84,10 @@ Emitted when navigation has been aborted.
 
 ## History
 
+### 0.0.4
+
+ * add 'interrupted' event
+
 ### 0.0.3
 
  * fix bot looking at its feet while walking
