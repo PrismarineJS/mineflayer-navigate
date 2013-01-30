@@ -109,7 +109,7 @@ function inject(bot) {
           currentCourse.shift();
           if (currentCourse.length === 0) {
             // done
-            stop();
+            stop(true);
             onArrived();
             return;
           }
@@ -343,12 +343,13 @@ function inject(bot) {
     }
   }
 
-  function stop() {
+  function stop(arrived) {
     if (currentCallbackId === undefined) return;
     clearInterval(currentCallbackId);
     currentCallbackId = undefined;
     bot.clearControlStates();
     bot.navigate.emit("stop");
+    if (! arrived) bot.navigate.emit("interrupted");
   }
 
   function isSafe(block) {

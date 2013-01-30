@@ -28,7 +28,7 @@ bot.navigate.on('cannotFind', function (closestPoint) {
 bot.navigate.on('arrived', function () {
   bot.chat("I have arrived");
 });
-bot.navigate.on('stop', function() {
+bot.navigate.on('interrupted', function() {
   bot.chat("stopping");
 });
 bot.on('chat', function(username, message) {
