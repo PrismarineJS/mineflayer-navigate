@@ -89,7 +89,7 @@ function inject(bot) {
 
       // start
       // go to the centers of blocks
-      currentCourse = arrayMapped(path, nodeCenterOffset);
+      currentCourse = path.map(nodeCenterOffset);
       var lastNodeTime = new Date().getTime();
       function monitorMovement() {
         var nextPoint = currentCourse[0];
@@ -325,15 +325,14 @@ function inject(bot) {
         };
       }
     });
-    var mappedResult = arrayMapped(result, function(point) {
+    return result.map(function(point) {
       var faceBlock = bot.blockAt(point.offset(0, 1, 0));
       var water = 0;
       if (faceBlock.type === 0x08 || faceBlock.type === 0x09) {
         water = node.water + 1;
       }
       return new Node(point, water);
-    });
-    return arrayFiltered(mappedResult, function(node) {
+    }).filter(function(node) {
       return node.water <= WATER_THRESHOLD;
     });
   }
@@ -355,23 +354,6 @@ function isSafe(block) {
 
 function nodeCenterOffset(node) {
   return node.point.offset(0.5, 0, 0.5);
-}
-
-function arrayFiltered(array, predicate) {
-  var result = [];
-  for (var i = 0; i < array.length; i++) {
-    var item = array[i];
-    if (predicate(item)) result.push(item);
-  }
-  return result;
-}
-
-function arrayMapped(array, transformer) {
-  var result = [];
-  for (var i = 0; i < array.length; i++) {
-    result.push(transformer(array[i]));
-  }
-  return result;
 }
 
 function Node(point, water) {
