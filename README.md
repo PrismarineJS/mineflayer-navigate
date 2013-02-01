@@ -70,9 +70,12 @@ of nodes.
 Emitted from `bot.navigate` when a complete path is found. `path` is an array
 of nodes.
 
-### event "cannotFind"
+### event "cannotFind" (closestPoint)
 
 Emitted when a path cannot be found.
+
+ * `closestPoint` - a `vec3` instance - the closest point that you *could*
+   navigate to.
 
 ### event "arrived"
 
