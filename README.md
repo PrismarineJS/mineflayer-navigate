@@ -55,10 +55,39 @@ Finds a path to the specified location and goes there.
      a vec3 instance.
    - `endRadius` - used for default `isEnd`. Effectively defaults to 0.
    - `timeout` - passed on to the A* library. Default 10 seconds.
+   - `tooFarThreshold` - how long paths to search for
 
 ### bot.navigate.stop()
 
 Aborts an in progress navigation job.
+
+### bot.navigate.findPath(end, [options], [callback])
+
+Finds a path to `end` and calls the callback function. Can be used to see
+if it is possible to navigate to a particular point.
+
+*Note: does not emit events*
+
+ * `point` - the block you want your feet to be standing on
+ * `options` - optional parameters which come with sensible defaults.
+   See `bot.navigate.to` for more detail.
+ * `callback(err, obj)` - (optional) - called when done. `obj` has different
+   meaning for different errors.
+   - `!err` - obj is an array of points that can be passed to `walk()`
+   - `err.type === 'tooFar'` - obj is the closest point to the `end` that
+     could be found.
+   - `err.type === 'cannotFind'` - no path to `end` could be found. Try a
+     larger `endRadius`.
+
+### bot.navigate.walk(path, [callback])
+
+*Note: does not emit events*
+
+Walks the bot along the path and calls the callback function when it has
+arrived.
+
+ * `path` - array of points to be navigated.
+ * `callback()` - (optional) - called when the bot has arrived.
 
 ### event "pathPartFound" (path)
 
