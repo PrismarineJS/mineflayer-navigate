@@ -21,9 +21,9 @@ bot.navigate.blocksToAvoid[59] = false; // ok to trample crops
 bot.navigate.on('pathFound', function (path) {
   bot.chat("found path. I can get there in " + path.length + " moves.");
 });
-bot.navigate.on('cannotFind', function (closestPoint) {
+bot.navigate.on('cannotFind', function (closestPath) {
   bot.chat("unable to find path. getting as close as possible");
-  bot.navigate.to(closestPoint);
+  bot.navigate.walk(closestPath);
 });
 bot.navigate.on('arrived', function () {
   bot.chat("I have arrived");
@@ -115,7 +115,7 @@ Parameters:
      a vec3 instance.
    - `endRadius` - used for default `isEnd`. Effectively defaults to 0.
    - `timeout` - passed on to the A* library. Default 10 seconds.
-   - `tooFarThreshold` - if `point` is greater than `tooFarThreshold`, this
+   - `tooFarThreshold` - if `end` is greater than `tooFarThreshold`, this
      function will search instead for a path to walk 100 meters in the general
      direction of end.
 
@@ -125,6 +125,8 @@ Parameters:
 
 Walks the bot along the path and calls the callback function when it has
 arrived.
+
+Call `bot.navigate.stop()` to interrupt walking.
 
  * `path` - array of points to be navigated.
  * `callback()` - (optional) - called when the bot has arrived.
