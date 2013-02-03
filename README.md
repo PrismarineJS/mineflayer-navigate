@@ -131,9 +131,13 @@ arrived.
 
 ## History
 
+### 0.0.6
+
+ * fix default `endRadius` too low (thanks vogonistic)
+
 ### 0.0.5
 
- * recommended API is now callback based
+ * recommended API is now callback based (thanks vogonistic)
  * add `bot.navigate.findPathSync(end, [options])`
  * add `bot.navigate.walk(path, [callblack])`
 
