@@ -131,6 +131,12 @@ arrived.
 
 ## History
 
+### 0.0.5
+
+ * recommended API is now callback based
+ * add `bot.navigate.findPathSync(end, [options])`
+ * add `bot.navigate.walk(path, [callblack])`
+
 ### 0.0.4
 
  * add 'interrupted' event
