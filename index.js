@@ -50,6 +50,7 @@ function inject(bot) {
   function findPathSync(end, params, callback) {
     params = params || {};
     callback = callback || noop;
+    end = end.floored()
 
     var timeout = params.timeout == null ? DEFAULT_TIMEOUT : params.timeout;
     var endRadius = params.endRadius == null ? DEFAULT_END_RADIUS : params.endRadius;
@@ -139,7 +140,6 @@ function inject(bot) {
     params = params || {};
     var onArrivedCb = params.onArrived ? params.onArrived : onArrived;
     bot.navigate.stop();
-    end = end.floored()
 
     var results = findPathSync(end, params);
     if (results.status === 'success') {
