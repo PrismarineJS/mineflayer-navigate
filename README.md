@@ -50,34 +50,74 @@ bot.on('chat', function(username, message) {
 Finds a path to the specified location and goes there.
 
  * `point` - the block you want your feet to be standing on
- * `options` - optional parameters which come with sensible defaults
-   - `isEnd` - function(node) - passed on to the A* library. `node.point` is
-     a vec3 instance.
-   - `endRadius` - used for default `isEnd`. Effectively defaults to 0.
-   - `timeout` - passed on to the A* library. Default 10 seconds.
-   - `tooFarThreshold` - how long paths to search for
+ * `options` - See `bot.navigate.findPathSync`
+
+#### event "pathPartFound" (path)
+
+Emitted from `bot.navigate` when a partial path is found. `path` is an array
+of nodes.
+
+#### event "pathFound" (path)
+
+Emitted from `bot.navigate` when a complete path is found. `path` is an array
+of nodes.
+
+#### event "cannotFind" (closestPoint)
+
+Emitted when a path cannot be found.
+
+ * `closestPoint` - a `vec3` instance - the closest point that you *could*
+   navigate to.
+
+#### event "arrived"
+
+Emitted when the destination is reached.
+
+#### event "stop"
+
+Emitted when navigation has been aborted.
+
 
 ### bot.navigate.stop()
 
 Aborts an in progress navigation job.
 
-### bot.navigate.findPath(end, [options], [callback])
+### bot.navigate.findPathSync(end, [options])
 
-Finds a path to `end` and calls the callback function. Can be used to see
-if it is possible to navigate to a particular point.
+Finds a path to `end`. Can be used to see if it is possible to navigate to a
+particular point.
 
-*Note: does not emit events*
+Returns an object that looks like:
 
- * `point` - the block you want your feet to be standing on
- * `options` - optional parameters which come with sensible defaults.
-   See `bot.navigate.to` for more detail.
- * `callback(err, obj)` - (optional) - called when done. `obj` has different
-   meaning for different errors.
-   - `!err` - obj is an array of points that can be passed to `walk()`
-   - `err.type === 'tooFar'` - obj is the closest point to the `end` that
-     could be found.
-   - `err.type === 'cannotFind'` - no path to `end` could be found. Try a
-     larger `endRadius`.
+```js
+{
+  status: 'success', // one of ['success', 'noPath', 'timeout', 'tooFar']
+  path: [startPoint, point1, point2, ..., endPoint],
+}
+```
+
+The value of `status` has several meanings:
+
+ * `success` - `path` is an array of points that can be passed to `walk()`.
+ * `noPath` - there is no path to `end`. Try a larger `endRadius`. `path`
+   is the path to the closest reachable point to end.
+ * `timeout` - no path could be found in the allotted time. Try a larger
+   `endRadius` or `timeout`. `path` is the path to the closest reachable
+    point to end that could be found in the allotted time.
+ * `tooFar` - `end` is too far away, so `path` contains the path to walk 100
+   meters in the general direction of `end`.
+
+Parameters:
+
+ * `end` - the block you want your feet to be standing on
+ * `options` - optional parameters which come with sensible defaults
+   - `isEnd` - function(node) - passed on to the A* library. `node.point` is
+     a vec3 instance.
+   - `endRadius` - used for default `isEnd`. Effectively defaults to 0.
+   - `timeout` - passed on to the A* library. Default 10 seconds.
+   - `tooFarThreshold` - if `point` is greater than `tooFarThreshold`, this
+     function will search instead for a path to walk 100 meters in the general
+     direction of end.
 
 ### bot.navigate.walk(path, [callback])
 
@@ -88,31 +128,6 @@ arrived.
 
  * `path` - array of points to be navigated.
  * `callback()` - (optional) - called when the bot has arrived.
-
-### event "pathPartFound" (path)
-
-Emitted from `bot.navigate` when a partial path is found. `path` is an array
-of nodes.
-
-### event "pathFound" (path)
-
-Emitted from `bot.navigate` when a complete path is found. `path` is an array
-of nodes.
-
-### event "cannotFind" (closestPoint)
-
-Emitted when a path cannot be found.
-
- * `closestPoint` - a `vec3` instance - the closest point that you *could*
-   navigate to.
-
-### event "arrived"
-
-Emitted when the destination is reached.
-
-### event "stop"
-
-Emitted when navigation has been aborted.
 
 ## History
 

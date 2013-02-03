@@ -13,9 +13,9 @@ bot.navigate.on('pathPartFound', function (path) {
 bot.navigate.on('pathFound', function (path) {
   bot.chat("I can get there in " + path.length + " moves.");
 });
-bot.navigate.on('cannotFind', function (closestPoint) {
+bot.navigate.on('cannotFind', function (closestPath) {
   bot.chat("unable to find path. getting as close as possible");
-  bot.navigate.to(closestPoint);
+  bot.navigate.walk(closestPath);
 });
 bot.navigate.on('arrived', function () {
   bot.chat("I have arrived");
@@ -27,13 +27,17 @@ bot.on('chat', function(username, message) {
   if (username === bot.username) return;
   var target = bot.players[username].entity;
   if (message === 'come') {
+    bot.chat("computing path to " + target.position);
     bot.navigate.to(target.position);
   } else if (message === 'stop') {
     bot.navigate.stop();
   } else {
-    var match = message.match(/^goto\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d)+\s*\)$/);
+    var match = message.match(/^goto\s*\(\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\)\s*$/);
     if (match) {
-      var pt = vec3(match[1], match[2], match[3]);
+      var pt = vec3(
+        parseFloat(match[1], 10),
+        parseFloat(match[2], 10),
+        parseFloat(match[3], 10));
       bot.navigate.to(pt);
     } else {
       console.log("no match");

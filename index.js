@@ -1,6 +1,5 @@
 var aStar = require('a-star')
   , EventEmitter = require('events').EventEmitter
-  , util = require('util')
 
 module.exports = init;
 
@@ -35,7 +34,7 @@ function inject(bot) {
   bot.navigate.to = navigateTo;
   bot.navigate.stop = stop;
   bot.navigate.walk = walk;
-  bot.navigate.findPath = findPath;
+  bot.navigate.findPathSync = findPathSync;
 
   bot.navigate.blocksToAvoid = {
     51: true, // fire
@@ -48,74 +47,40 @@ function inject(bot) {
     bot.navigate.emit("arrived");
   }
 
-  function onPathFound(path) {
-    bot.navigate.emit("pathFound", path);
-  }
-
-  function onCannotFind(closestPoint) {
-    bot.navigate.emit("cannotFind", closestPoint);
-  }
-
-  function onPartialPathFound(path) {
-    bot.navigate.emit("pathPartFound", path);
-  }
-
-  function findPath(end, params, callback) {
-    if (typeof params === 'function') {
-      callback = params;
-      params = {};
-    }
-
+  function findPathSync(end, params, callback) {
     params = params || {};
     callback = callback || noop;
 
-    var timeout = params.timeout === undefined ? DEFAULT_TIMEOUT : params.timeout;
-    var endRadius = params.endRadius === undefined ? DEFAULT_END_RADIUS : params.endRadius;
-    var tooFarThreshold = params.tooFarThreshold === undefined ? TOO_FAR_THRESHOLD : params.tooFarThreshold;
+    var timeout = params.timeout == null ? DEFAULT_TIMEOUT : params.timeout;
+    var endRadius = params.endRadius == null ? DEFAULT_END_RADIUS : params.endRadius;
+    var tooFarThreshold = params.tooFarThreshold == null ? TOO_FAR_THRESHOLD : params.tooFarThreshold;
     var actualIsEnd = params.isEnd || createIsEndWithRadius(end, endRadius);
     var heuristic = createHeuristicFn(end);
 
     var start = bot.entity.position.floored();
-    // too far to destination. search for a point along the way
+    var tooFar = false;
     if (start.distanceTo(end) > tooFarThreshold) {
-      var closeEnough = Math.round(tooFarThreshold * 0.66);
-      actualIsEnd = function justGoIsEnd(node) {
-        return node.water === 0 && start.distanceTo(node.point) >= closeEnough;
-      }
+      // Too far to calculate reliably. Return 'tooFar' and a path to walk
+      // in the general direction of end.
+      actualIsEnd = function(node) {
+        // let's just go 100 meters (and not end in water)
+        return node.water === 0 && start.distanceTo(node.point) >= 100;
+      };
+      tooFar = true;
     }
 
     // search
-    var closest = { point:null, distance:null };
-    var path = aStar({
+    var results = aStar({
       start: new Node(start, 0),
       isEnd: actualIsEnd,
-      neighbor: neighborWrap,
+      neighbor: getNeighbors,
       distance: distanceFunc,
       heuristic: heuristic,
       timeout: timeout,
     });
-
-    if (path) {
-      path = path.map(nodeCenterOffset);
-      if (path[path.length - 1].distanceTo(end) <= (endRadius+1)) {
-        callback(null, path);
-      } else {
-        // callback(null, path.map(nodeCenterOffset));
-        returnError('tooFar', 'Too far to navigate all the way', path);
-      }
-    } else {
-      returnError('cannotFind', 'Cannot find a path', closest.point);
-    }
-
-    function returnError(type, message, argument) {
-      var err = new Error(message)
-      err.type = type;
-      callback(err, argument);
-    }
-
-    function neighborWrap(node) {
-      return getNeighbors(node, end, closest);
-    }
+    results.status = tooFar ? 'tooFar' : results.status;
+    results.path = results.path.map(nodeCenterOffset);
+    return results;
   }
 
   function walk(currentCourse, callback) {
@@ -174,29 +139,27 @@ function inject(bot) {
     params = params || {};
     var onArrivedCb = params.onArrived ? params.onArrived : onArrived;
     bot.navigate.stop();
-    end = end.floored()//.offset(0.5, 0.5, 0.5);
+    end = end.floored()
 
-    findPath(end, params, function onFindPathCb(err, obj) {
-      // we got a path
-      if (!err) {
-        onPathFound(obj);
-        bot.navigate.walk(obj, function(err) {
-          onArrivedCb();
-        });
+    var results = findPathSync(end, params);
+    if (results.status === 'success') {
+      bot.navigate.emit("pathFound", results.path);
+      walk(results.path, function() {
+        onArrivedCb();
+      });
+    } else if (results.status === 'tooFar') {
       // it's too far, just walk in the general direction and restart the search
-      } else if (err.type === 'tooFar') {
-        onPartialPathFound(obj);
-        bot.navigate.walk(obj, function(err) {
-          navigateTo(end, params);
-        });
+      bot.navigate.emit("pathPartFound", results.path);
+      walk(results.path, function() {
+        navigateTo(end, params);
+      });
+    } else if (results.status === 'noPath' || results.status === 'timeout') {
       // can't find a path
-      } else if (err.type === 'cannotFind') {
-        onCannotFind(obj);
-      }
-    })
+      bot.navigate.emit("cannotFind", results.path);
+    }
   }
 
-  function getNeighbors(node, end, closest) {
+  function getNeighbors(node) {
     // for each cardinal direction:
     // "." is head. "+" is feet and current location.
     // "#" is initial floor which is always solid. "a"-"u" are blocks to check
@@ -214,11 +177,6 @@ function inject(bot) {
     //  dz
     //
     var point = node.point;
-    var distance = point.distanceTo(end);
-    if (!closest.point || distance < closest.distance) {
-      closest.point = point;
-      closest.distance = distance;
-    }
     var isSafeA = isSafe(bot.blockAt(point.offset(0, 2, 0)));
     var result = [];
     cardinalDirectionVectors.forEach(function(directionVector) {
