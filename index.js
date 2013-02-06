@@ -47,9 +47,8 @@ function inject(bot) {
     bot.navigate.emit("arrived");
   }
 
-  function findPathSync(end, params, callback) {
+  function findPathSync(end, params) {
     params = params || {};
-    callback = callback || noop;
     end = end.floored()
 
     var timeout = params.timeout == null ? DEFAULT_TIMEOUT : params.timeout;
