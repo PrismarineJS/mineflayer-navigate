@@ -21,7 +21,6 @@ function init(mineflayer) {
 }
 
 function inject(bot) {
-  var currentCallbackId;
   var currentCourse = [];
   var cardinalDirectionVectors = [
     vec3(-1, 0,  0), // north
@@ -32,7 +31,7 @@ function inject(bot) {
 
   bot.navigate = new EventEmitter();
   bot.navigate.to = navigateTo;
-  bot.navigate.stop = stop;
+  bot.navigate.stop = noop;
   bot.navigate.walk = walk;
   bot.navigate.findPathSync = findPathSync;
 
@@ -86,6 +85,8 @@ function inject(bot) {
   function walk(currentCourse, callback) {
     callback = callback || noop;
     var lastNodeTime = new Date().getTime();
+    var monitorInterval = setInterval(monitorMovement, MONITOR_INTERVAL);
+    bot.navigate.stop = stop;
 
     function monitorMovement() {
       var nextPoint = currentCourse[0];
@@ -96,7 +97,8 @@ function inject(bot) {
         currentCourse.shift();
         if (currentCourse.length === 0) {
           // done
-          bot.navigate.stop(true);
+          stop('done');
+          bot.navigate.emit('arrived');
           callback();
           return;
         }
@@ -122,23 +124,20 @@ function inject(bot) {
       bot.lookAt(lookAtPoint);
       bot.setControlState('forward', true);
     }
-    currentCallbackId = setInterval(monitorMovement, MONITOR_INTERVAL);
-  }
 
-  function stop(arrived) {
-    if (currentCallbackId === undefined) return;
-    clearInterval(currentCallbackId);
-    currentCallbackId = undefined;
-    bot.clearControlStates();
-    bot.navigate.emit("stop");
-    if (! arrived) bot.navigate.emit("interrupted");
+    function stop(reason) {
+      clearInterval(monitorInterval);
+      bot.clearControlStates();
+      bot.navigate.emit("stop", reason);
+      callback(reason);
+    }
   }
 
   // publicly exposed
   function navigateTo(end, params) {
     params = params || {};
     var onArrivedCb = params.onArrived ? params.onArrived : onArrived;
-    bot.navigate.stop();
+    bot.navigate.stop('interrupted');
 
     var results = findPathSync(end, params);
     if (results.status === 'success') {
