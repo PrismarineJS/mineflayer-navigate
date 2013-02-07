@@ -133,6 +133,11 @@ Call `bot.navigate.stop()` to interrupt walking.
 
 ## History
 
+### 0.0.7
+
+ * walk: callback is still called if `bot.navigate.stop()` is called
+   elsewhere. Also it now has a `stopReason` argument.
+
 ### 0.0.6
 
  * fix default `endRadius` too low (thanks vogonistic)
