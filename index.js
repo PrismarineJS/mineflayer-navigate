@@ -97,9 +97,8 @@ function inject(bot) {
         currentCourse.shift();
         if (currentCourse.length === 0) {
           // done
-          stop('done');
           bot.navigate.emit('arrived');
-          callback();
+          stop('arrived');
           return;
         }
         // not done yet
@@ -126,6 +125,7 @@ function inject(bot) {
     }
 
     function stop(reason) {
+      bot.navigate.stop = noop;
       clearInterval(monitorInterval);
       bot.clearControlStates();
       bot.navigate.emit("stop", reason);

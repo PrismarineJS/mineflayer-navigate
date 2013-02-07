@@ -27,10 +27,16 @@ bot.on('chat', function(username, message) {
   if (username === bot.username) return;
   var target = bot.players[username].entity;
   if (message === 'come') {
-    bot.chat("computing path to " + target.position);
     bot.navigate.to(target.position);
   } else if (message === 'stop') {
     bot.navigate.stop();
+  } else if (message === 'testcb') {
+    bot.chat("computing path to " + target.position);
+    var results = bot.navigate.findPathSync(target.position);
+    bot.chat("status: " + results.status);
+    bot.navigate.walk(results.path, function(stopReason) {
+      bot.chat("done. " + stopReason);
+    });
   } else {
     var match = message.match(/^goto\s*\(\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\)\s*$/);
     if (match) {
