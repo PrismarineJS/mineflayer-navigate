@@ -86,6 +86,7 @@ function inject(bot) {
     callback = callback || noop;
     var lastNodeTime = new Date().getTime();
     var monitorInterval = setInterval(monitorMovement, MONITOR_INTERVAL);
+    bot.navigate.stop('interrupted');
     bot.navigate.stop = stop;
 
     function monitorMovement() {
@@ -122,6 +123,13 @@ function inject(bot) {
       var lookAtPoint = vec3(nextPoint.x, lookAtY, nextPoint.z);
       bot.lookAt(lookAtPoint);
       bot.setControlState('forward', true);
+
+      // check for futility
+      if (new Date().getTime() - lastNodeTime > 1500) {
+        // should never take this long to go to the next node
+        bot.navigate.emit('obstructed');
+        stop('obstructed');
+      }
     }
 
     function stop(reason) {

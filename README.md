@@ -129,7 +129,8 @@ arrived.
 Call `bot.navigate.stop()` to interrupt walking.
 
  * `path` - array of points to be navigated.
- * `callback()` - (optional) - called when the bot has arrived.
+ * `callback(stopReason)` - (optional) - called when the bot has arrived.
+   `stopReason` can be: ['obstructed', 'arrived', 'interrupted']
 
 ## History
 
