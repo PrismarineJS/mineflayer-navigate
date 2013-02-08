@@ -134,6 +134,11 @@ Call `bot.navigate.stop()` to interrupt walking.
 
 ## History
 
+### 0.0.8
+
+ * walk: detect being obstructed and call callback with `'obstructed'`
+   `stopReason` when it happens.
+
 ### 0.0.7
 
  * walk: callback is still called if `bot.navigate.stop()` is called
