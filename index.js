@@ -98,7 +98,6 @@ function inject(bot) {
         currentCourse.shift();
         if (currentCourse.length === 0) {
           // done
-          bot.navigate.emit('arrived');
           stop('arrived');
           return;
         }
