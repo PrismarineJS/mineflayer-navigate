@@ -134,6 +134,10 @@ Call `bot.navigate.stop()` to interrupt walking.
 
 ## History
 
+### 0.0.9
+
+ * don't emit `arrived` twice. (thanks Benjamin Grosse)
+
 ### 0.0.8
 
  * walk: detect being obstructed and call callback with `'obstructed'`
