@@ -42,6 +42,11 @@ bot.on('chat', function(username, message) {
   }
 });
 ```
+## Dependencies
+
+The plugin requires the `a-star` module. This module installed using `npm`:
+
+    npm install a-star
 
 ## Documentation
 
