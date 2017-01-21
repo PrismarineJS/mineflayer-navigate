@@ -1,5 +1,5 @@
 var mineflayer = require('mineflayer');
-var vec3 = mineflayer.vec3;
+var vec3 = require('vec3');
 var navigatePlugin = require('../')(mineflayer);
 var bot = mineflayer.createBot({
   username: "Player",
