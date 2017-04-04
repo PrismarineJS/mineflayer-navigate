@@ -134,6 +134,10 @@ Call `bot.navigate.stop()` to interrupt walking.
 
 ## History
 
+### 0.0.10
+
+ * depends on vec3 directly
+
 ### 0.0.9
 
  * don't emit `arrived` twice. (thanks Benjamin Grosse)
