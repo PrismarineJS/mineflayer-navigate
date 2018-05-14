@@ -1,4 +1,6 @@
 # mineflayer-navigate
+[![NPM version](https://img.shields.io/npm/v/mineflayer-navigate.svg)](http://npmjs.com/package/mineflayer-navigate)
+[![Build Status](https://circleci.com/gh/PrismarineJS/mineflayer-navigate/tree/master.svg?style=shield)](https://circleci.com/gh/PrismarineJS/mineflayer-navigate/tree/master)
 
 A library to help your mineflayer bot navigate around the 3D world using
 the A* algorithm.
@@ -10,9 +12,9 @@ See [https://github.com/superjoe30/mineflayer/](https://github.com/superjoe30/mi
 ## Usage
 
 ```js
-var mineflayer = require('mineflayer');
-var navigatePlugin = require('mineflayer-navigate')(mineflayer);
-var bot = mineflayer.createBot({ username: 'Player' });
+const mineflayer = require('mineflayer');
+const navigatePlugin = require('mineflayer-navigate')(mineflayer);
+const bot = mineflayer.createBot({ username: 'Player' });
 // install the plugin
 navigatePlugin(bot);
 // optional configuration
@@ -34,7 +36,7 @@ bot.navigate.on('interrupted', function() {
 bot.on('chat', function(username, message) {
   // navigate to whoever talks
   if (username === bot.username) return;
-  var target = bot.players[username].entity;
+  const target = bot.players[username].entity;
   if (message === 'come') {
     bot.navigate.to(target.position);
   } else if (message === 'stop') {

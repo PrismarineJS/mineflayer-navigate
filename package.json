@@ -4,7 +4,12 @@
   "description": "mineflayer plugin which adds 3d pathfinding",
   "main": "index.js",
   "devDependencies": {
-    "mineflayer": "^2.0.0"
+    "mineflayer": "^2.0.0",
+    "standard": "^11.0.1"
+  },
+  "scripts": {
+    "test": "npm run lint",
+    "lint": "standard"
   },
   "repository": {
     "type": "git",
