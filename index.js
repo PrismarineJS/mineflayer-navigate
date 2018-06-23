@@ -134,7 +134,7 @@ function inject (bot) {
       clearInterval(monitorInterval)
       bot.clearControlStates()
       bot.navigate.emit('stop', reason)
-      callback(reason)
+      callback(reason, true)
     }
   }
 
@@ -153,7 +153,10 @@ function inject (bot) {
     } else if (results.status === 'tooFar') {
       // it's too far, just walk in the general direction and restart the search
       bot.navigate.emit('pathPartFound', results.path)
-      walk(results.path, function () {
+      walk(results.path, function (status, stop) {
+        if (stop) {
+          return; 
+        }
         navigateTo(end, params)
       })
     } else if (results.status === 'noPath' || results.status === 'timeout') {
