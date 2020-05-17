@@ -5,11 +5,12 @@
   "main": "index.js",
   "devDependencies": {
     "mineflayer": "^2.0.0",
-    "standard": "^11.0.1"
+    "standard": "^14.3.4"
   },
   "scripts": {
     "test": "npm run lint",
-    "lint": "standard"
+    "lint": "standard",
+    "fix": "standard --fix"
   },
   "repository": {
     "type": "git",
