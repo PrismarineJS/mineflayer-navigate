@@ -1,6 +1,6 @@
 # mineflayer-navigate
 [![NPM version](https://img.shields.io/npm/v/mineflayer-navigate.svg)](http://npmjs.com/package/mineflayer-navigate)
-[![Build Status](https://circleci.com/gh/PrismarineJS/mineflayer-navigate/tree/master.svg?style=shield)](https://circleci.com/gh/PrismarineJS/mineflayer-navigate/tree/master)
+[![Build Status](https://github.com/PrismarineJS/mineflayer-navigate/workflows/CI/badge.svg)](https://github.com/PrismarineJS/mineflayer-navigate/actions?query=workflow%3A%22CI%22)
 
 Deprecation notice : this library is a simple example of pathfinding and works well for the simple cases, you can study its code. However if you need something more robust, we advise to use https://github.com/Karang/mineflayer-pathfinder instead 
 
