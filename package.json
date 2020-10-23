@@ -5,7 +5,7 @@
   "main": "index.js",
   "devDependencies": {
     "mineflayer": "^2.0.0",
-    "standard": "^14.3.4"
+    "standard": "^15.0.0"
   },
   "scripts": {
     "test": "npm run lint",
