@@ -321,13 +321,15 @@ function inject (bot) {
       }
       function properties (point) {
         const block = bot.blockAt(point)
-        return block ? {
-          safe: isSafe(block),
-          physical: block.boundingBox === 'block'
-        } : {
-          safe: false,
-          physical: false
-        }
+        return block
+          ? {
+              safe: isSafe(block),
+              physical: block.boundingBox === 'block'
+            }
+          : {
+              safe: false,
+              physical: false
+            }
       }
     }) // cardinalDirectionVectors.forEach
 
