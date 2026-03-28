@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - master # Change this to your default branch
+permissions:
+  id-token: write
+  contents: write
 jobs:
   npm-publish:
     name: npm-publish
@@ -13,7 +16,8 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@master
       with:
-        node-version: 22.0.0
+        node-version: 24
+        registry-url: 'https://registry.npmjs.org'
     - name: Publish if version has been updated
       uses: pascalgn/npm-publish-action@4f4bf159e299f65d21cd1cbd96fc5d53228036df
       with: # All of theses inputs are optional
