@@ -138,6 +138,29 @@ Call `bot.navigate.stop()` to interrupt walking.
 
 ## History
 
+### 0.1.0
+* [Add repo commands workflow (#70)](https://github.com/PrismarineJS/mineflayer-navigate/commit/7576d20f372538a30595c3edc97331e0a85dcb8f) (thanks @rom1504)
+* [Update CI to Node 24 (#69)](https://github.com/PrismarineJS/mineflayer-navigate/commit/98d6f8fc0a12245b7a760b1a268c5511f4069402) (thanks @rom1504)
+* [Fix publish workflow for trusted publishing (#68)](https://github.com/PrismarineJS/mineflayer-navigate/commit/f65cbed2ddf4de89cf7260fb074c35a1246267e0) (thanks @rom1504)
+* [Switch to trusted publishing via OIDC (#67)](https://github.com/PrismarineJS/mineflayer-navigate/commit/180a1030f14a5d9678f25bd60accbd4ad4318d93) (thanks @rom1504)
+* [node 22 (#66)](https://github.com/PrismarineJS/mineflayer-navigate/commit/9993b0d81e0f013933f6f5e4ad6c1e9ab874bf90) (thanks @rom1504)
+* [Update to node 18.0.0 (#65)](https://github.com/PrismarineJS/mineflayer-navigate/commit/f554c0762571a1c4cfc6aa5641fd08d12c9ad1b7) (thanks @rom1504)
+* [Bump standard from 16.0.4 to 17.0.0 (#61)](https://github.com/PrismarineJS/mineflayer-navigate/commit/5dcb40593e7aa679a0e217ac4c4a7ce229f0c9d3) (thanks @dependabot[bot])
+* [Bump mineflayer from 3.18.0 to 4.0.0 (#60)](https://github.com/PrismarineJS/mineflayer-navigate/commit/8d7f3548627713a94b28a1a883bbd4bc44fed2e1) (thanks @dependabot[bot])
+* [Upgrade to GitHub-native Dependabot (#58)](https://github.com/PrismarineJS/mineflayer-navigate/commit/705d7416fb7109ed7f0d527b78881ff290da32e5) (thanks @dependabot-preview[bot])
+* [Bump mineflayer from 2.41.0 to 3.0.0 (#56)](https://github.com/PrismarineJS/mineflayer-navigate/commit/7cc83b95c2789343f805162a46924d748b03cd97) (thanks @dependabot-preview[bot])
+* [update to standard 16](https://github.com/PrismarineJS/mineflayer-navigate/commit/9ea6b2d86c42bb44d040fdb206e751a0fa5db64a) (thanks @rom1504)
+* [add npmrc that disable package-lock.json creation](https://github.com/PrismarineJS/mineflayer-navigate/commit/ad3fa627fa9a982d61b260f7674114628b034100) (thanks @rom1504)
+* [update standard to version 15](https://github.com/PrismarineJS/mineflayer-navigate/commit/e2ae221f0330997aef4758bdb2a7cce1e32ec49b) (thanks @rom1504)
+* [put deprecated in bold](https://github.com/PrismarineJS/mineflayer-navigate/commit/b2be52b9aad4c12bfe6d345873b14a49b3f94988) (thanks @rom1504)
+* [circle ci -> github action](https://github.com/PrismarineJS/mineflayer-navigate/commit/4f59bde4cca9a8c2590eb1c1d2acd265e83b5a77) (thanks @rom1504)
+* [Add deprecation notice](https://github.com/PrismarineJS/mineflayer-navigate/commit/c49900fd6ed26c3731be599018f5209251e8a15b) (thanks @rom1504)
+* [Merge pull request #50 from PrismarineJS/dependabot/npm_and_yarn/standard-14.3.4](https://github.com/PrismarineJS/mineflayer-navigate/commit/b9339e482f38934994bece9e3227f15e4ec304a4) (thanks @rom1504)
+* [standard fix](https://github.com/PrismarineJS/mineflayer-navigate/commit/f21846ac15c805752ff2c6f717f599b34e83f92f) (thanks @rom1504)
+* [Bump standard from 11.0.1 to 14.3.4](https://github.com/PrismarineJS/mineflayer-navigate/commit/15b34118ed04a6ef75f9936034117e3edeadf08f) (thanks @dependabot-preview[bot])
+* [circleci 2](https://github.com/PrismarineJS/mineflayer-navigate/commit/6f84e292ce18d02b96bdbbb61354372cd3fac8e3) (thanks @rom1504)
+* [use standardjs](https://github.com/PrismarineJS/mineflayer-navigate/commit/eccb51ebac67edc943e912954b50c65e348b011d) (thanks @rom1504)
+
 ### 0.0.10
 
  * depends on vec3 directly
